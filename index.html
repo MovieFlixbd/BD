@@ -429,7 +429,7 @@
                 allMovies = moviesData ? Object.keys(moviesData).map(id => ({ id, ...moviesData[id] })) : [];
                 
                 // Display slider with latest 5 movies
-                displaySlider(allMovies.slice(-5).reverse());
+                displaySlider(allMovies.slice(-3).reverse());
                 
                 // Display movies by genre
                 displayMoviesByGenre(moviesData);
