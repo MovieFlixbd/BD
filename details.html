@@ -1,421 +1,794 @@
-<!DOCTYPE html>
-<html lang="en">
+                <!DOCTYPE html>
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MovieFlix</title>
+    <title>মুভি ডিটেলস - সিনেমা হাব</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome 6.4.0 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase v9 compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
-        :root {
-            --primary-color: #e50914;
-            --dark-color: #141414;
-            --light-color: #f4f4f4;
-            --secondary-color: #999;
-        }
+        @import url("https://fonts.googleapis.com/css2?family=Oswald:wght@300;400&display=swap");
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
+        :root {
+            --primary-bg: linear-gradient(to bottom right, #0f172a, #1e293b);
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
         }
         
         body {
-            background-color: #111;
-            color: var(--light-color);
+            background: var(--primary-bg);
+            min-height: 100vh;
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
         }
         
-        a {
-            color: var(--light-color);
-            text-decoration: none;
+        /* Glass effect */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Header */
-        header {
-            background-color: rgba(0, 0, 0, 0.9);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 15px 0;
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .back-btn {
-            background: var(--primary-color);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .back-btn:hover {
-            opacity: 0.9;
-        }
-        
-        /* Movie Details */
-        .movie-details {
-            padding-top: 100px;
-            padding-bottom: 50px;
-        }
-        
-        .details-container {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-        
-        @media (min-width: 992px) {
-            .details-container {
-                flex-direction: row;
-            }
-        }
-        
-        .movie-poster {
-            flex: 0 0 300px;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .movie-poster img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-        
-        .movie-info {
-            flex: 1;
-        }
-        
-        .movie-title {
-            font-size: 32px;
-            margin-bottom: 15px;
-        }
-        
-        .movie-meta {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            color: var(--secondary-color);
-        }
-        
-        .movie-genre {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .genre-tag {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .movie-description {
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .play-btn, .download-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 4px;
-            font-weight: 500;
-            font-size: 18px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
-        }
-        
-        .play-btn {
-            background: var(--primary-color);
-        }
-        
-        .download-btn {
-            background: #2ecc71;
-        }
-        
-        .play-btn:hover, .download-btn:hover {
-            opacity: 0.9;
-        }
-        
-        /* Advanced Video Player */
-        .video-player-container {
-            margin-top: 30px;
-            position: relative;
-            background: #000;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
+        /* Video player styles */
         .video-container {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            height: 0;
-        }
-        
-        .video-container video {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
         }
         
-        .player-controls {
+        .video-player {
+            width: 100%;
+            height: auto;
+            background: #000;
+        }
+        
+        .video-controls {
             position: absolute;
             bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .video-container:hover .player-controls,
-        .video-container:focus-within .player-controls,
-        .player-controls.show-controls {
-            opacity: 1;
-        }
-        
-        .progress-container {
             width: 100%;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.2);
-            margin-bottom: 10px;
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: var(--primary-color);
-            width: 0%;
-            position: relative;
-        }
-        
-        .progress-bar::after {
-            content: '';
-            position: absolute;
-            right: -5px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 10px;
-            height: 10px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        
-        .progress-container:hover .progress-bar::after {
-            opacity: 1;
-        }
-        
-        .controls-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-        
-        .left-controls, .right-controls {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+        
+        .video-container:hover .video-controls {
+            transform: translateY(0);
         }
         
         .control-btn {
             background: none;
             border: none;
             color: white;
-            font-size: 18px;
             cursor: pointer;
-            padding: 5px;
+            font-size: 18px;
+            margin: 0 5px;
+            z-index: 11;
         }
         
-        .time {
-            font-size: 14px;
-            color: white;
-            min-width: 9px;
-            text-align: center;
+        .progress-container {
+            flex-grow: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 0 10px;
+            cursor: pointer;
+            position: relative;
+            z-index: 11;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-blue);
+            border-radius: 5px;
+            width: 0%;
         }
         
         .volume-container {
             display: flex;
             align-items: center;
-            gap: 5px;
+            margin: 0 10px;
+            z-index: 11;
         }
         
         .volume-slider {
-            width: 30px;
-            height: 4px;
-            -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
-            outline: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
+            width: 80px;
+            margin-left: 5px;
         }
         
-        .volume-container:hover .volume-slider {
-            opacity: 1;
+        .time-display {
+            margin: 0 10px;
+            font-size: 14px;
+            z-index: 11;
         }
         
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 12px;
-            height: 12px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
+        .fullscreen-btn {
+            margin-left: auto;
         }
         
-        .playback-speed {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 8px;
-            font-size: 6px;
-            cursor: pointer;
-        }
-        
-        /* Floating Skip Buttons */
-        .skip-buttons-container {
+        /* Loading spinner for video */
+        .video-loading {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            pointer-events: none;
-            z-index: 5;
-        }
-        
-        .skip-button {
-            width: 30px;
-            height: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 24px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: auto;
-            cursor: pointer;
-            border: none;
-            margin: 0 20px;
-        }
-        
-        .skip-button:hover {
-            background: rgba(0, 0, 0, 0.7);
-        }
-        
-        .video-container:hover .skip-button {
-            opacity: 1;
-        }
-        
-        /* Loading Spinner */
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
         }
         
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.1);
+            border: 4px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
         
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
-        /* Error Message */
-        .error {
-            color: var(--primary-color);
+        /* Badge styles */
+        .badge {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        
+        .category-badge {
+            background: rgba(79, 70, 229, 0.7);
+        }
+        
+        /* Back button */
+        .back-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateX(-5px);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.4);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+        
+        /* Fullscreen styles */
+        :-webkit-full-screen .video-container {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+        }
+        
+        :-webkit-full-screen .video-player {
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        /* Skip buttons */
+        .skip-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 9;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .video-container:hover .skip-btn {
+            opacity: 1;
+        }
+        
+        .skip-backward {
+            left: 20px;
+        }
+        
+        .skip-forward {
+            right: 20px;
+        }
+        
+        /* Quality selector */
+        .quality-selector {
+            position: relative;
+            margin: 0 10px;
+            z-index: 11;
+        }
+        
+        .quality-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .quality-menu {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 4px;
+            padding: 5px 0;
+            display: none;
+            min-width: 100px;
+        }
+        
+        .quality-menu.show {
+            display: block;
+        }
+        
+        .quality-option {
+            padding: 5px 10px;
+            cursor: pointer;
+            color: white;
+        }
+        
+        .quality-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Custom Logo Styles - TV Channel Style */
+        .video-logo-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 8;
+            opacity: 0.9;
+            transition: all 0.3s ease;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .video-logo-overlay .logo-outer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .video-logo-overlay .main-reel {
+            height: 50px;
+            width: 50px;
+            display: flex;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #1a56db, #9333ea);
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .video-logo-overlay .main-reel::after {
+            content: "";
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            width: 3px;
+            height: 50%;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+        }
+        
+        .video-logo-overlay .inner-reel {
+            height: 25px;
+            width: 25px;
+            margin: auto;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #1e40af, #7e22ce);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .video-logo-overlay .inner-reel::after {
+            content: "";
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            width: 12px;
+            height: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+        
+        .video-logo-overlay .reel-dots {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            left: 0;
+            right: 0;
+            animation: dots-rotate 4s linear infinite;
+        }
+        
+        .video-logo-overlay .reel-dots .dot {
+            height: 8px;
+            width: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
+        }
+        
+        .video-logo-overlay .reel-dots .dot:nth-child(1) {
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .video-logo-overlay .reel-dots .dot:nth-child(2) {
+            top: 12px;
+            right: 12px;
+        }
+        
+        .video-logo-overlay .reel-dots .dot:nth-child(3) {
+            top: 50%;
+            right: 4px;
+            transform: translateY(-50%);
+        }
+        
+        .video-logo-overlay .reel-dots .dot:nth-child(4) {
+            bottom: 12px;
+            right: 12px;
+        }
+        
+        .video-logo-overlay .reel-dots .dot:nth-child(5) {
+            bottom: 4px;
+            right: 50%;
+            transform: translateX(50%);
+        }
+        
+        .video-logo-overlay .reel-dots .dot:nth-child(6) {
+            bottom: 12px;
+            left: 12px;
+        }
+        
+        .video-logo-overlay .reel-dots .dot:nth-child(7) {
+            top: 50%;
+            left: 4px;
+            transform: translateY(-50%);
+        }
+        
+        .video-logo-overlay .reel-dots .dot:nth-child(8) {
+            top: 12px;
+            left: 12px;
+        }
+        
+        .video-logo-overlay .logo-text {
+            margin-top: 5px;
             text-align: center;
-            padding: 50px 0;
+        }
+        
+        .video-logo-overlay .logo-text h1 {
+            font-size: 16px;
+            line-height: 18px;
+            letter-spacing: 1px;
+            font-weight: normal;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            font-family: "Oswald", sans-serif;
+            text-transform: uppercase;
+        }
+        
+        .video-logo-overlay .logo-text p {
+            font-size: 12px;
+            line-height: 12px;
+            font-weight: lighter;
+            letter-spacing: 3px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            margin-right: -3px;
+            font-family: "Oswald", sans-serif;
+            text-transform: uppercase;
+        }
+        
+        /* Animation */
+        @keyframes dots-rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .video-controls {
+                padding: 10px;
+            }
+            
+            .control-btn {
+                font-size: 16px;
+            }
+            
+            .volume-slider {
+                width: 60px;
+            }
+            
+            .time-display {
+                font-size: 12px;
+            }
+            
+            .skip-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 14px;
+            }
+            
+            .video-logo-overlay {
+                width: 60px;
+                height: 60px;
+                top: 8px;
+                right: 8px;
+            }
+            
+            .video-logo-overlay .main-reel {
+                height: 40px;
+                width: 40px;
+            }
+            
+            .video-logo-overlay .inner-reel {
+                height: 20px;
+                width: 20px;
+            }
+            
+            .video-logo-overlay .reel-dots .dot {
+                height: 6px;
+                width: 6px;
+            }
+            
+            .video-logo-overlay .logo-text h1 {
+                font-size: 14px;
+                line-height: 16px;
+            }
+            
+            .video-logo-overlay .logo-text p {
+                font-size: 10px;
+                line-height: 10px;
+                letter-spacing: 2px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .video-logo-overlay {
+                width: 50px;
+                height: 50px;
+                top: 5px;
+                right: 5px;
+            }
+            
+            .video-logo-overlay .main-reel {
+                height: 35px;
+                width: 35px;
+            }
+            
+            .video-logo-overlay .inner-reel {
+                height: 17px;
+                width: 17px;
+            }
+            
+            .video-logo-overlay .reel-dots .dot {
+                height: 5px;
+                width: 5px;
+            }
+            
+            .video-logo-overlay .logo-text h1 {
+                font-size: 12px;
+                line-height: 14px;
+            }
+            
+            .video-logo-overlay .logo-text p {
+                font-size: 9px;
+                line-height: 9px;
+                letter-spacing: 1px;
+            }
+        }
+        
+        /* Smart TV and larger screens */
+        @media (min-width: 1920px) {
+            .video-logo-overlay {
+                width: 100px;
+                height: 100px;
+                top: 15px;
+                right: 15px;
+            }
+            
+            .video-logo-overlay .main-reel {
+                height: 60px;
+                width: 60px;
+            }
+            
+            .video-logo-overlay .inner-reel {
+                height: 30px;
+                width: 30px;
+            }
+            
+            .video-logo-overlay .reel-dots .dot {
+                height: 10px;
+                width: 10px;
+            }
+            
+            .video-logo-overlay .logo-text h1 {
+                font-size: 20px;
+                line-height: 22px;
+            }
+            
+            .video-logo-overlay .logo-text p {
+                font-size: 14px;
+                line-height: 14px;
+                letter-spacing: 4px;
+            }
         }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <a href="index.html" class="logo">MovieFlix</a>
-                <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
+<body class="min-h-screen">
+    <!-- নেভিগেশন -->
+    <nav class="glass fixed w-full z-20 px-4 py-3">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <a href="এইচএফএফ.html" class="back-btn flex items-center text-blue-400 hover:text-blue-300">
+                    <i class="fa-solid fa-arrow-left text-xl mr-2"></i>
+                    <i class="fa-solid fa-film text-2xl mr-2"></i>
+                </a>
+                <h1 class="text-xl font-bold">সিনেমা হাব</h1>
+            </div>
+            
+            <div class="flex items-center">
+                <span class="text-sm mr-4 hidden md:block">মুভি ডিটেলস</span>
+                <a href="এইচএফএফ.html" class="glass px-4 py-2 rounded-lg text-sm">
+                    <i class="fa-solid fa-home mr-1"></i> হোম
+                </a>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- Movie Details -->
-    <section class="movie-details">
-        <div class="container">
-            <div id="movie-details-content">
-                <div class="loading">
-                    <div class="spinner"></div>
+    <!-- মুভি ডিটেলস সেকশন -->
+    <div class="pt-24 pb-16 px-4">
+        <div class="container mx-auto">
+            <!-- লোডিং স্টেট -->
+            <div id="loading" class="flex justify-center items-center py-12">
+                <div class="spinner"></div>
+                <span class="ml-3">মুভি লোড হচ্ছে...</span>
+            </div>
+            
+            <!-- এরর স্টেট -->
+            <div id="error" class="hidden text-center py-12">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-yellow-400 mb-4"></i>
+                <p class="text-xl mb-4">মুভি লোড করতে সমস্যা হয়েছে</p>
+                <button onclick="loadMovieDetails()" class="glass px-6 py-2 rounded-lg hover:bg-opacity-80 transition">আবার চেষ্টা করুন</button>
+            </div>
+            
+            <!-- মুভি ডিটেলস কন্টেন্ট -->
+            <div id="movieDetails" class="hidden">
+                <!-- মুভি হেডার -->
+                <div class="flex flex-col md:flex-row gap-8 mb-12">
+                    <div class="w-full md:w-1/3 lg:w-1/4">
+                        <img id="moviePoster" src="" alt="মুভি পোস্টার" class="w-full rounded-lg shadow-lg">
+                    </div>
+                    
+                    <div class="w-full md:w-2/3 lg:w-3/4">
+                        <h1 id="movieTitle" class="text-3xl md:text-4xl font-bold mb-2"></h1>
+                        
+                        <div class="flex flex-wrap items-center gap-2 mb-4">
+                            <span id="movieYear" class="badge px-3 py-1 rounded-full"></span>
+                            <span id="movieGenre" class="category-badge px-3 py-1 rounded-full"></span>
+                            <span class="badge px-3 py-1 rounded-full flex items-center">
+                                <i class="fa-solid fa-clock mr-1"></i>
+                                <span id="movieDuration">২ ঘণ্টা ১৫ মিনিট</span>
+                            </span>
+                            <span class="badge px-3 py-1 rounded-full flex items-center">
+                                <i class="fa-solid fa-star mr-1 text-yellow-400"></i>
+                                <span id="movieRating">৮.৫/১০</span>
+                            </span>
+                        </div>
+                        
+                        <p id="movieDescription" class="text-gray-300 mb-6">
+                            এই মুভিটি একটি অসাধারণ গল্প নিয়ে তৈরি হয়েছে, যা দর্শকদের মনে দাগ কাটবে। পরিচালকের অনবদ্য পরিচালনা এবং শিল্পীদের অভিনয় মুভিটিকে অনন্য উচ্চতায় নিয়ে গেছে।
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-4">
+                            <button id="playBtn" class="glass px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 transition flex items-center">
+                                <i class="fa-solid fa-play mr-2"></i> মুভি দেখুন
+                            </button>
+                            <a id="downloadBtn" href="#" target="_blank" class="glass px-6 py-3 rounded-lg bg-green-600 hover:bg-green-700 transition flex items-center">
+                                <i class="fa-solid fa-download mr-2"></i> ডাউনলোড করুন
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ভিডিও প্লেয়ার সেকশন -->
+                <div id="videoSection" class="hidden mb-12">
+                    <h2 class="text-2xl font-bold mb-6">মুভি দেখুন</h2>
+                    
+                    <div class="video-container">
+                        <video class="video-player" id="moviePlayer">
+                            আপনার ব্রাউজার ভিডিও এলিমেন্ট সাপোর্ট করে না
+                        </video>
+                        
+                        <!-- স্কিপ বাটন -->
+                        <button class="skip-btn skip-backward" title="১০ সেকেন্ড পিছনে">
+                            <i class="fa-solid fa-rotate-left"></i> ১০s
+                        </button>
+                        <button class="skip-btn skip-forward" title="১০ সেকেন্ড সামনে">
+                            ১০s <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                        
+                        <!-- কাস্টম লোগো ওভারলে - TV চ্যানেল স্টাইল -->
+                        <div class="video-logo-overlay">
+                            <div class="logo-outer">
+                                <div class="main-reel">
+                                    <div class="inner-reel"></div>
+                                    <div class="reel-dots">
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                    </div>
+                                </div>
+                                <div class="logo-text">
+                                    <h1>সিনেমা</h1>
+                                    <p>হাব</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="video-loading hidden">
+                            <div class="spinner"></div>
+                        </div>
+                        
+                        <div class="video-controls">
+                            <button class="control-btn play-pause" id="playPauseBtn">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                            
+                            <div class="progress-container" id="progressContainer">
+                                <div class="progress-bar" id="progressBar"></div>
+                            </div>
+                            
+                            <div class="time-display">
+                                <span id="currentTime">00:00</span> / <span id="duration">00:00</span>
+                            </div>
+                            
+                            <div class="volume-container">
+                                <button class="control-btn volume-btn" id="volumeBtn">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                </button>
+                                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+                            </div>
+                            
+                            <!-- কোয়ালিটি সিলেক্টর -->
+                            <div class="quality-selector">
+                                <button class="quality-btn" id="qualityBtn">
+                                    <i class="fa-solid fa-gear mr-1"></i> কোয়ালিটি
+                                </button>
+                                <div class="quality-menu" id="qualityMenu">
+                                    <div class="quality-option" data-quality="auto">অটো</div>
+                                    <div class="quality-option" data-quality="1080">1080p</div>
+                                    <div class="quality-option" data-quality="720">720p</div>
+                                    <div class="quality-option" data-quality="480">480p</div>
+                                    <div class="quality-option" data-quality="360">360p</div>
+                                </div>
+                            </div>
+                            
+                            <button class="control-btn fullscreen-btn" id="fullscreenBtn">
+                                <i class="fa-solid fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- মুভি তথ্য -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass rounded-lg p-6">
+                        <h2 class="text-xl font-bold mb-4">মুভি তথ্য</h2>
+                        
+                        <div class="space-y-3">
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">পরিচালক</span>
+                                <span id="movieDirector" class="w-2/3">রাজ চৌধুরী</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">অভিনয়ে</span>
+                                <span id="movieCast" class="w-2/3">সালমান খান, কারিনा कापুর, অমিতাভ বচ্চন</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">দেশ</span>
+                                <span id="movieCountry" class="w-2/3">ভারত</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">ভাষা</span>
+                                <span id="movieLanguage" class="w-2/3">হিন্দি</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">মুক্তি তারিখ</span>
+                                <span id="movieReleaseDate" class="w-2/3">১ নভেম্বর, ২০২৪</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass rounded-lg p-6">
+                        <h2 class="text-xl font-bold mb-4">অন্যান্য তথ্য</h2>
+                        
+                        <div class="space-y-3">
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">গুণমান</span>
+                                <span class="w-2/3 flex items-center">
+                                    <i class="fa-solid fa-hd text-blue-400 mr-1"></i> HD 1080p
+                                </span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">সাবটাইটেল</span>
+                                <span class="w-2/3">বাংলা, ইংরেজি</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">অডিও</span>
+                                <span class="w-2/3">বাংলা ডাবিং, हिन्दी অরিজিনাল</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">ফাইল সাইজ</span>
+                                <span class="w-2/3">১.২ GB</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-1/3 text-gray-400">দৈর্ঘ্য</span>
+                                <span class="w-2/3">২ ঘণ্টা ১৫ মিনিট</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
+    <!-- Firebase এবং অ্যাপ লজিক -->
     <script>
-        // Firebase configuration (same as index.html)
+        // Firebase কনফিগারেশন
         const firebaseConfig = {
-           apiKey: "AIzaSyA0SGh...",
+            apiKey: "AIzaSyA0SGhRFaylQy92qJGKwailBNQmbN8BeWY",
             authDomain: "kotha-web-a5573.firebaseapp.com",
             databaseURL: "https://kotha-web-a5573-default-rtdb.firebaseio.com",
             projectId: "kotha-web-a5573",
@@ -425,301 +798,491 @@
             measurementId: "G-G8XHYT53L3"
         };
 
-        // Initialize Firebase
+        // Firebase ইনিশিয়ালাইজেশন
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Get movie details from Firebase
-        function fetchMovieDetails() {
-            const movieId = localStorage.getItem('selectedMovieId');
+        // URL থেকে মুভি আইডি পাওয়া
+        function getMovieIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // DOM এলিমেন্টস
+        const movieId = getMovieIdFromUrl();
+        let currentMovie = null;
+        let isPlaying = false;
+        let isFullscreen = false;
+
+        // DOM কনটেন্ট লোড হওয়ার পর মুভি ডিটেলস লোড শুরু
+        document.addEventListener('DOMContentLoaded', function() {
+            if (movieId) {
+                loadMovieDetails();
+                setupVideoPlayer();
+            } else {
+                showError();
+            }
+            
+            // রাইট ক্লিক ডিজেবল
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+        });
+
+        // মুভি ডিটেলস লোড ফাংশন
+        function loadMovieDetails() {
+            showLoading();
             
             if (!movieId) {
-                document.getElementById('movie-details-content').innerHTML = '<p class="error">No movie selected. Please go back and select a movie.</p>';
+                showError();
                 return;
             }
             
-            const movieRef = database.ref(`movies/${movieId}`);
-            
-            movieRef.on('value', (snapshot) => {
-                const movieData = snapshot.val();
-                if (movieData) {
-                    displayMovieDetails(movieData);
+            // Firebase Realtime Database থেকে ডেটা লোড
+            database.ref('movies/' + movieId).once('value')
+            .then((snapshot) => {
+                if (snapshot.exists()) {
+                    currentMovie = snapshot.val();
+                    currentMovie.id = snapshot.key;
+                    displayMovieDetails(currentMovie);
+                    hideLoading();
                 } else {
-                    document.getElementById('movie-details-content').innerHTML = '<p class="error">Movie not found.</p>';
+                    showError();
                 }
-            }, (error) => {
-                console.error("Error fetching movie details: ", error);
-                document.getElementById('movie-details-content').innerHTML = '<p class="error">Error loading movie details. Please try again later.</p>';
+            })
+            .catch((error) => {
+                console.error("Error loading movie details: ", error);
+                showError();
+                
+                // Fallback: স্ট্যাটিক ডেটা ব্যবহার
+                setTimeout(() => {
+                    loadStaticMovieDetails();
+                }, 2000);
             });
         }
+        
+        // স্ট্যাটিক মুভি ডেটা (Fallback)
+        function loadStaticMovieDetails() {
+            const staticMovies = {
+                "1": {
+                    id: "1",
+                    title: "Singham Again",
+                    genre: "Action , Hindi movie",
+                    year: "1Nov 2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FSingham%20Again%20%5BHindi%5D.webp?alt=media&token=85c985f2-7791-42bc-86f1-5c398555724e",
+                    downloadUrl: "https://example.com/download/1",
+                    url: "https://example.com/watch/1",
+                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                    description: "সিংহাম আবার একটি অ্যাকশন প্যাকড হিন্দি মুভি যেখানে প্রধান চরিত্রে আছেন অজয় দেবগন। এই মুভিতে দেখা যাবে কিভাবে সিংহাম অন্যায়ের বিরুদ্ধে লড়াই করে।",
+                    director: "রোহিত শেট্টি",
+                    cast: "অজয় দেবগন, কারिना कापुर, অক্ষয় কুমар",
+                    country: "ভারত",
+                    language: "হিন্দি",
+                    releaseDate: "১ নভেম্বর, ২০২৪"
+                },
+                "2": {
+                    id: "2",
+                    title: "Animal",
+                    genre: "Bangla Movie, Bangla Dubbed",
+                    year: "2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FAnimal%20%5BKannada%5D.webp?alt=media&token=1aeab97e-5819-4bb3-8a94-6a9494554965",
+                    downloadUrl: "https://example.com/download/2",
+                    url: "https://example.com/watch/2",
+                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                    description: "এনিমাল একটি বাংলা ডাবড মুভি যেটি মূলত একটি দক্ষিণ ভারতীয় মুভি। এই মুভিতে দেখা যাবে একটি শক্তিশালী পারিবারিক কাহিনী এবং অ্যাকশন।",
+                    director: "সন্দEEP reddy Vanga",
+                    cast: "রনবীর কাপুর, অনিল কাপুর, রশ্মিকা মন্দানা",
+                    country: "ভারত",
+                    language: "বাংলা (ডাবড)",
+                    releaseDate: "১ ডিসেম্বর, ২০২৩"
+                },
+                "3": {
+                    id: "3",
+                    title: "Saripodhaa Sanivaaram (Hindi)",
+                    genre: "Action , Hindi dubbed, Hindi movie",
+                    year: "2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FSaripodhaa%20Sanivaaram%20%5BHindi%5D.webp?alt=media&token=13626842-f425-45af-85d0-8da49cb60f68",
+                    downloadUrl: "https://example.com/download/3",
+                    url: "https://example.com/watch/3",
+                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                    description: "সারিপোধা সানিভারাম একটি হিন্দি ডাবড অ্যাকশন মুভি যেটিতে প্রধান চরিত্রে আছেন বিজয় দেবরকোন্ডা। মুভিটি অ্যাকশন এবং ড্রামায় ভরপুর।",
+                    director: "Vivek Athreya",
+                    cast: "বিজয় দেবরকোন্ডা, শ্রদ্ধা শ্রীনাথ",
+                    country: "ভারত",
+                    language: "হিন্দি (ডাবড)",
+                    releaseDate: "১৫ মার্চ, ২০২৪"
+                },
+                "4": {
+                    id: "4",
+                    title: "Rajkumar (2024) Bangla Movie",
+                    genre: "Action,Bangla Movie",
+                    year: "2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FMV5BZDg4ZTUxNDMtNTdmYS00YjQ4LWI5ZGQtMTY0ZmM2NTZmNGU4XkEyXkFqcGc%40._V1_.jpg?alt=media&token=c53f1231-2efe-4e49-94ad-f5d36780d464",
+                    downloadUrl: "https://example.com/download/4",
+                    url: "https://example.com/watch/4",
+                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                    description: "রাজকুমার একটি বাংলা অ্যাকশন মুভি যেখানে প্রধান চরিত্রে আছেন শাকিব খান। মুভিটি একটি শক্তিশালী গল্প এবং অ্যাকশন সিকোয়েন্স নিয়ে তৈরি।",
+                    director: "রাজ চৌধুরী",
+                    cast: "শাকিব খান, শ্রাবন্তী, মিমি চাকraborty",
+                    country: "বাংলাদেশ",
+                    language: "বাংলা",
+                    releaseDate: "১০ মে, ২০২৪"
+                },
+                "5": {
+                    id: "5",
+                    title: "Toofan",
+                    genre: "Action,Bangla Movie",
+                    year: "2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FToofan%20%5BBengali%5D.jpg?alt=media&token=bc34f1ba-5c86-455f-9a56-c8e2448f481f",
+                    downloadUrl: "https://example.com/download/5",
+                    url: "https://example.com/watch/5",
+                    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+                    description: "তুফান একটি বাংলা অ্যাকশন মুভি যেখানে প্রধান চরিত্রে আছেন ডিয়াজ খান। মুভিটি একটি শক্তিশালী গল্প এবং অ্যাকশন সিকোয়েন্স নিয়ে তৈরি।",
+                    director: "রাজ চৌধুরী",
+                    cast: "ডিয়াজ খান, মিমি চাকraborty, মoushumi",
+                    country: "বাংলাদেশ",
+                    language: "বাংলা",
+                    releaseDate: "২০ জুন, ২০২৪"
+                }
+            };
+            
+            if (staticMovies[movieId]) {
+                currentMovie = staticMovies[movieId];
+                displayMovieDetails(currentMovie);
+                hideLoading();
+            } else {
+                showError();
+            }
+        }
 
-        // Display movie details with advanced video player
+        // মুভি ডিটেলস ডিসপ্লে ফাংশন
         function displayMovieDetails(movie) {
-            // Split genres if they are comma-separated
-            let genres = [];
-            if (movie.genre) {
-                genres = movie.genre.split(',').map(g => g.trim());
+            document.getElementById('movieDetails').classList.remove('hidden');
+            
+            // পোস্টার সেট করুন
+            const posterUrl = getPosterUrl(movie);
+            document.getElementById('moviePoster').src = posterUrl;
+            
+            // টাইটেল সেট করুন
+            document.getElementById('movieTitle').textContent = movie.title || 'অজানা মুভি';
+            
+            // বছর সেট করুন
+            document.getElementById('movieYear').textContent = movie.year || '২০২৪';
+            
+            // জেনার সেট করুন
+            const primaryCategory = extractPrimaryCategory(movie.genre || '');
+            document.getElementById('movieGenre').textContent = primaryCategory;
+            
+            // বর্ণনা সেট করুন
+            if (movie.description) {
+                document.getElementById('movieDescription').textContent = movie.description;
             }
             
-            // Check if downloadUrl exists, otherwise use main url
-            const downloadUrl = movie.downloadUrl || movie.url;
+            // ডাউনলোড লিঙ্ক সেট করুন
+            if (movie.downloadUrl) {
+                document.getElementById('downloadBtn').href = movie.downloadUrl;
+            } else {
+                document.getElementById('downloadBtn').classList.add('hidden');
+            }
             
-            const html = `
-              <div class="video-player-container" id="video-player" style="display: none;">
-                            <div class="video-container">
-                                <!-- Floating Skip Buttons -->
-                                <div class="skip-buttons-container">
-                                    <button class="skip-button" id="skip-back-button">
-                                        <i class="fas fa-backward"></i>
-                                    </button>
-                                    <button class="skip-button" id="skip-forward-button">
-                                        <i class="fas fa-forward"></i>
-                                    </button>
-                                </div>
-                                
-                                <video id="movie-video">
-                                    <source src="${movie.url}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                                
-                                <div class="player-controls">
-                                    <div class="progress-container" id="progress-container">
-                                        <div class="progress-bar" id="progress-bar"></div>
-                                    </div>
-                                    
-                                    <div class="controls-row">
-                                        <div class="left-controls">
-                                            <button class="control-btn play-pause-btn" id="play-pause-btn">
-                                                <i class="fas fa-play"></i>
-                                            </button>
-                                            
-                                            <span class="time" id="current-time">00:00</span>
-                                            <span class="time">/</span>
-                                            <span class="time" id="duration">00:00</span>
-                                        </div>
-                                        
-                                        <div class="right-controls">
-                                            <div class="volume-container">
-                                                <button class="control-btn volume-btn" id="volume-btn">
-                                                    <i class="fas fa-volume-up"></i>
-                                                </button>
-                                                <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.01" value="1">
-                                            </div>
-                                            
-                                            <select class="playback-speed" id="playback-speed">
-                                                <option value="0.5">0.5x</option>
-                                                <option value="0.75">0.75x</option>
-                                                <option value="1" selected>1x</option>
-                                                <option value="1.25">1.25x</option>
-                                                <option value="1.5">1.5x</option>
-                                                <option value="2">2x</option>
-                                            </select>
-                                            
-                                            <button class="control-btn fullscreen-btn" id="fullscreen-btn">
-                                                <i class="fas fa-expand"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                <div class="details-container">
-                    <div class="movie-poster">
-                        <img src="${movie.photoUrl}" alt="${movie.title}" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                    </div>
-                    <div class="movie-info">
-                        <h1 class="movie-title">${movie.title}</h1>
-                        <div class="movie-meta">
-                            <span>${movie.year || 'N/A'}</span>
-                        </div>
-                        <div class="movie-genre">
-                            ${genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="play-btn" id="play-btn">
-                                <i class="fas fa-play"></i> Play Now
-                            </button>
-                            <button class="download-btn" onclick="downloadMovie('${downloadUrl}', '${movie.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}')">
-                                <i class="fas fa-download"></i> Download
-                            </button>
-                        </div>
-                        
-                        
-                    </div>
-                </div>
-            `;
+            // ভিডিও URL থাকলে ভিডিও সেকশন দেখান
+            if (movie.videoUrl || movie.url) {
+                document.getElementById('videoSection').classList.remove('hidden');
+            }
             
-            document.getElementById('movie-details-content').innerHTML = html;
+            // অতিরিক্ত তথ্য সেট করুন
+            if (movie.director) {
+                document.getElementById('movieDirector').textContent = movie.director;
+            }
             
-            // Initialize video player
-            initVideoPlayer();
+            if (movie.cast) {
+                document.getElementById('movieCast').textContent = movie.cast;
+            }
+            
+            if (movie.country) {
+                document.getElementById('movieCountry').textContent = movie.country;
+            }
+            
+            if (movie.language) {
+                document.getElementById('movieLanguage').textContent = movie.language;
+            }
+            
+            if (movie.releaseDate) {
+                document.getElementById('movieReleaseDate').textContent = movie.releaseDate;
+            }
+            
+            // প্লে বাটনে ইভেন্ট লিসেনার যোগ করুন
+            document.getElementById('playBtn').addEventListener('click', function() {
+                playMovie(movie);
+            });
         }
 
-        // Initialize advanced video player
-        function initVideoPlayer() {
-            const video = document.getElementById('movie-video');
-            const videoPlayer = document.getElementById('video-player');
-            const playBtn = document.getElementById('play-btn');
-            const playPauseBtn = document.getElementById('play-pause-btn');
-            const progressBar = document.getElementById('progress-bar');
-            const progressContainer = document.getElementById('progress-container');
-            const currentTimeEl = document.getElementById('current-time');
-            const durationEl = document.getElementById('duration');
-            const skipBackButton = document.getElementById('skip-back-button');
-            const skipForwardButton = document.getElementById('skip-forward-button');
-            const volumeBtn = document.getElementById('volume-btn');
-            const volumeSlider = document.getElementById('volume-slider');
-            const playbackSpeed = document.getElementById('playback-speed');
-            const fullscreenBtn = document.getElementById('fullscreen-btn');
+        // ভিডিও প্লেয়ার সেটআপ
+        function setupVideoPlayer() {
+            const video = document.getElementById('moviePlayer');
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const volumeBtn = document.getElementById('volumeBtn');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const currentTimeElement = document.getElementById('currentTime');
+            const durationElement = document.getElementById('duration');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const videoLoading = document.querySelector('.video-loading');
+            const skipForwardBtn = document.querySelector('.skip-forward');
+            const skipBackwardBtn = document.querySelector('.skip-backward');
+            const qualityBtn = document.getElementById('qualityBtn');
+            const qualityMenu = document.getElementById('qualityMenu');
             
-            // Show video player when play button is clicked
-            playBtn.addEventListener('click', () => {
-                videoPlayer.style.display = 'block';
-                video.play();
-                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                playBtn.style.display = 'none';
-                
-                // Scroll to video player
-                videoPlayer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // প্লে/পজ বাটন
+            playPauseBtn.addEventListener('click', function() {
+                togglePlayPause();
             });
             
-            // Play/Pause functionality
-            playPauseBtn.addEventListener('click', togglePlay);
-            video.addEventListener('click', togglePlay);
-            
-            function togglePlay() {
-                if (video.paused) {
-                    video.play();
-                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                } else {
-                    video.pause();
-                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-                }
-            }
-            
-            // Update progress bar
-            video.addEventListener('timeupdate', updateProgress);
-            
-            function updateProgress() {
-                const percent = (video.currentTime / video.duration) * 100;
-                progressBar.style.width = `${percent}%`;
-                
-                // Update time display
-                currentTimeEl.textContent = formatTime(video.currentTime);
-            }
-            
-            // Set video duration on metadata load
-            video.addEventListener('loadedmetadata', () => {
-                durationEl.textContent = formatTime(video.duration);
+            // ভলিউম কন্ট্রোল
+            volumeBtn.addEventListener('click', function() {
+                video.muted = !video.muted;
+                updateVolumeIcon();
             });
             
-            // Click on progress bar to seek
-            progressContainer.addEventListener('click', (e) => {
-                const pos = (e.pageX - progressContainer.getBoundingClientRect().left) / progressContainer.offsetWidth;
+            volumeSlider.addEventListener('input', function() {
+                video.volume = volumeSlider.value;
+                updateVolumeIcon();
+            });
+            
+            // প্রোগ্রেস বার
+            progressContainer.addEventListener('click', function(e) {
+                const pos = (e.pageX - this.offsetLeft) / this.offsetWidth;
                 video.currentTime = pos * video.duration;
             });
             
-            // Skip buttons functionality
-            skipBackButton.addEventListener('click', () => skip(-10));
-            skipForwardButton.addEventListener('click', () => skip(10));
+            // ফুলস্ক্রিন বাটন
+            fullscreenBtn.addEventListener('click', function() {
+                toggleFullscreen();
+            });
             
-            function skip(seconds) {
-                video.currentTime += seconds;
+            // স্কিপ বাটন
+            skipForwardBtn.addEventListener('click', function() {
+                video.currentTime += 10;
+            });
+            
+            skipBackwardBtn.addEventListener('click', function() {
+                video.currentTime -= 10;
+            });
+            
+            // কোয়ালিটি সিলেক্টর
+            qualityBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                qualityMenu.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', function() {
+                qualityMenu.classList.remove('show');
+            });
+            
+            qualityMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (e.target.classList.contains('quality-option')) {
+                    const quality = e.target.getAttribute('data-quality');
+                    changeQuality(quality);
+                    qualityMenu.classList.remove('show');
+                }
+            });
+            
+            // ভিডিও ইভেন্টস
+            video.addEventListener('timeupdate', function() {
+                const percent = (video.currentTime / video.duration) * 100;
+                progressBar.style.width = percent + '%';
                 
-                // Show skip animation
-                const button = seconds < 0 ? skipBackButton : skipForwardButton;
-                button.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    button.style.transform = 'scale(1)';
-                }, 200);
-            }
-            
-            // Volume controls
-            volumeBtn.addEventListener('click', toggleMute);
-            
-            function toggleMute() {
-                video.muted = !video.muted;
-                volumeBtn.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-                volumeSlider.value = video.muted ? 0 : video.volume;
-            }
-            
-            volumeSlider.addEventListener('input', (e) => {
-                video.volume = e.target.value;
-                video.muted = e.target.value === '0';
-                volumeBtn.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+                currentTimeElement.textContent = formatTime(video.currentTime);
             });
             
-            // Playback speed
-            playbackSpeed.addEventListener('change', (e) => {
-                video.playbackRate = e.target.value;
+            video.addEventListener('loadedmetadata', function() {
+                durationElement.textContent = formatTime(video.duration);
             });
             
-            // Fullscreen functionality
-            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            video.addEventListener('waiting', function() {
+                videoLoading.classList.remove('hidden');
+            });
             
-            function toggleFullscreen() {
-                if (!document.fullscreenElement) {
-                    videoPlayer.requestFullscreen().catch(err => {
-                        console.error(`Error attempting to enable fullscreen: ${err.message}`);
-                    });
-                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            video.addEventListener('canplay', function() {
+                videoLoading.classList.add('hidden');
+            });
+            
+            video.addEventListener('play', function() {
+                isPlaying = true;
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            });
+            
+            video.addEventListener('pause', function() {
+                isPlaying = false;
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            });
+            
+            video.addEventListener('ended', function() {
+                isPlaying = false;
+                playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                video.currentTime = 0;
+            });
+            
+            // কীবোর্ড শর্টকাট
+            document.addEventListener('keydown', function(e) {
+                if (e.keyCode === 32) { // Space bar
+                    e.preventDefault();
+                    togglePlayPause();
+                } else if (e.keyCode === 70) { // F key
+                    e.preventDefault();
+                    toggleFullscreen();
+                } else if (e.keyCode === 39) { // Right arrow key
+                    video.currentTime += 10;
+                } else if (e.keyCode === 37) { // Left arrow key
+                    video.currentTime -= 10;
+                } else if (e.keyCode === 27) { // Escape key
+                    if (isFullscreen) {
+                        exitFullscreen();
+                    }
+                }
+            });
+            
+            // প্লে/পজ টগল ফাংশন
+            function togglePlayPause() {
+                if (video.paused || video.ended) {
+                    video.play();
                 } else {
-                    document.exitFullscreen();
-                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                    video.pause();
                 }
             }
             
-            // Show controls when mouse moves
-            let controlsTimeout;
-            let skipButtonsTimeout;
-            
-            function showControls() {
-                document.querySelector('.player-controls').classList.add('show-controls');
-                document.querySelectorAll('.skip-button').forEach(btn => btn.style.opacity = '1');
-                
-                clearTimeout(controlsTimeout);
-                clearTimeout(skipButtonsTimeout);
-                
-                controlsTimeout = setTimeout(() => {
-                    document.querySelector('.player-controls').classList.remove('show-controls');
-                }, 3000);
-                
-                skipButtonsTimeout = setTimeout(() => {
-                    document.querySelectorAll('.skip-button').forEach(btn => btn.style.opacity = '0');
-                }, 3000);
+            // ভলিউম আইকন আপডেট ফাংশন
+            function updateVolumeIcon() {
+                if (video.muted || video.volume === 0) {
+                    volumeBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+                    volumeSlider.value = 0;
+                } else if (video.volume < 0.5) {
+                    volumeBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
+                } else {
+                    volumeBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                }
             }
             
-            videoPlayer.addEventListener('mousemove', showControls);
+            // ফুলস্ক্রিন টগল ফাংশন
+            function toggleFullscreen() {
+                const videoContainer = document.querySelector('.video-container');
+                
+                if (!isFullscreen) {
+                    if (videoContainer.requestFullscreen) {
+                        videoContainer.requestFullscreen();
+                    } else if (videoContainer.webkitRequestFullscreen) {
+                        videoContainer.webkitRequestFullscreen();
+                    } else if (videoContainer.msRequestFullscreen) {
+                        videoContainer.msRequestFullscreen();
+                    }
+                    isFullscreen = true;
+                    fullscreenBtn.innerHTML = '<i class="fa-solid fa-compress"></i>';
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                    isFullscreen = false;
+                    fullscreenBtn.innerHTML = '<i class="fa-solid fa-expand"></i>';
+                }
+            }
             
-            // Format time as MM:SS
+            // ফুলস্ক্রিন থেকে প্রস্থান ফাংশন
+            function exitFullscreen() {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                isFullscreen = false;
+                fullscreenBtn.innerHTML = '<i class="fa-solid fa-expand"></i>';
+            }
+            
+            // কোয়ালিটি পরিবর্তন ফাংশন
+            function changeQuality(quality) {
+                // এখানে কোয়ালিটি পরিবর্তনের লজিক যোগ করুন
+                console.log('Quality changed to:', quality);
+                // বাস্তব应用中, আপনি বিভিন্ন রেজোল্যুশনের ভিডিও সোর্স স্যুইচ করবেন
+            }
+            
+            // টাইম ফরম্যাট ফাংশন
             function formatTime(seconds) {
                 const minutes = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+                seconds = Math.floor(seconds % 60);
+                return minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
             }
         }
 
-        // Download movie function
-        function downloadMovie(url, filename) {
-            if (!url) {
-                alert('Download link not available for this movie.');
-                return;
+        // মুভি প্লে ফাংশন
+        function playMovie(movie) {
+            const video = document.getElementById('moviePlayer');
+            const videoUrl = movie.videoUrl || movie.url;
+            
+            if (videoUrl) {
+                video.src = videoUrl;
+                video.load();
+                video.play();
+                
+                document.getElementById('playBtn').classList.add('hidden');
+            }
+        }
+
+        // পোস্টার URL পাওয়ার ফাংশন
+        function getPosterUrl(movie) {
+            if (movie.photoUrl) {
+                let url = movie.photoUrl;
+                if (url.startsWith('http://')) {
+                    url = 'https://' + url.substring(7);
+                }
+                return url;
             }
             
-            // Create a temporary anchor tag to trigger download
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename || 'movie';
-            a.target = '_blank';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            return 'https://via.placeholder.com/800x1200?text=No+Poster';
         }
 
-        // Initialize the app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', fetchMovieDetails);
+        // জেনার স্ট্রিং থেকে প্রাইমারি ক্যাটাগরি বের করা
+        function extractPrimaryCategory(genreString) {
+            if (!genreString) return '';
+            
+            const lowerGenre = genreString.toLowerCase();
+            
+            // প্রায়োরিটি অনুযায়ী ক্যাটাগরি চেক করা
+            if (lowerGenre.includes('bangla')) return 'বাংলা মুভি';
+            if (lowerGenre.includes('hindi')) return 'হিন্দি মুভি';
+            if (lowerGenre.includes('action')) return 'অ্যাকশন';
+            if (lowerGenre.includes('drama')) return 'ড্রামা';
+            if (lowerGenre.includes('comedy')) return 'কমেডি';
+            if (lowerGenre.includes('thriller')) return 'থ্রিলার';
+            if (lowerGenre.includes('horror')) return 'হরর';
+            if (lowerGenre.includes('romance')) return 'রোম্যান্স';
+            
+            // যদি কোনো ম্যাচ না থাকে, প্রথম অংশ রিটার্ন করুন
+            return genreString.split(',')[0].trim();
+        }
+
+        // লোডিং স্টেট ফাংশন
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('movieDetails').classList.add('hidden');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+        
+        function showError() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error').classList.remove('hidden');
+            document.getElementById('movieDetails').classList.add('hidden');
+        }
     </script>
 </body>
 </html>
