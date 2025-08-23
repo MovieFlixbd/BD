@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>সিনেমা হাব — আপনার প্রিয় মুভির সংগ্রহ</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase v9 compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --primary-bg: linear-gradient(to bottom right, #0f172a, #1e293b);
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+        }
+        
+        body {
+            background: var(--primary-bg);
+            min-height: 100vh;
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Glass effect */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Card hover effects */
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Poster image effect */
+        .poster {
+            transition: transform 0.5s ease;
+        }
+        
+        .poster:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Badge styles */
+        .badge {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        
+        .category-badge {
+            background: rgba(79, 70, 229, 0.7);
+        }
+        
+        /* Form elements */
+        select, input {
+            background: rgba(15, 23, 42, 0.4);
+            color: white;
+        }
+        
+        select:focus, input:focus {
+            outline: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Loading spinner */
+        #loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 10vh;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Hero pattern */
+        .hero-pattern {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        /* Mobile menu */
+        .mobile-menu {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+        
+        /* TV-friendly larger text */
+        @media (min-width: 1200px) {
+            .tv-text {
+                font-size: 1.2rem;
+            }
+            
+            .tv-heading {
+                font-size: 2.5rem;
+            }
+            
+            .tv-card {
+                min-height: 420px;
+            }
+        }
+        
+        /* Touch-friendly buttons */
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scscrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.4);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+        
+        /* Clickable card area */
+        .clickable-area {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- নেভিগেশন -->
+    <nav class="glass fixed w-full z-20 px-4 py-3">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fa-solid fa-film text-2xl text-blue-400 mr-2"></i>
+                <h1 class="text-xl font-bold">সিনেমা হাব</h1>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex space-x-4">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="মুভি খুঁজুন..." 
+                           class="w-48 lg:w-64 px-4 py-2 rounded-lg focus:outline-none focus:ring-0 placeholder-gray-400">
+                    <i class="fa-solid fa-search absolute right-3 top-3 text-gray-400"></i>
+                </div>
+                <select id="categoryFilter" class="px-4 py-2 rounded-lg focus:outline-none focus:ring-0">
+                    <option value="all">সব ক্যাটাগরি</option>
+                    <option value="Action">অ্যাকশন</option>
+                    <option value="Drama">ড্রামা</option>
+                    <option value="Comedy">কমেডি</option>
+                    <option value="Thriller">থ্রিলার</option>
+                    <option value="Horror">হরর</option>
+                    <option value="Romance">রোম্যান্স</option>
+                    <option value="Bangla Movie">বাংলা মুভি</option>
+                    <option value="Hindi movie">হিন্দি মুভি</option>
+                </select>
+            </div>
+            
+            <!-- Mobile menu button -->
+            <button id="mobileMenuButton" class="md:hidden text-xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobileMenu" class="mobile-menu glass fixed inset-y-0 left-0 w-64 p-6 shadow-lg md:hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-film text-2xl text-blue-400 mr-2"></i>
+                    <h1 class="text-xl font-bold">সিনেমা হাব</h1>
+                </div>
+                <button id="closeMobileMenu" class="text-xl">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="relative">
+                    <input type="text" id="mobileSearchInput" placeholder="মুভি খুঁজুন..." 
+                           class="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-0 placeholder-gray-400">
+                    <i class="fa-solid fa-search absolute right-3 top-3 text-gray-400"></i>
+                </div>
+                <select id="mobileCategoryFilter" class="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-0">
+                    <option value="all">সব ক্যাটাগরি</option>
+                    <option value="Action">অ্যাকশন</option>
+                    <option value="Drama">ড্রামা</option>
+                    <option value="Comedy">কমেডি</option>
+                    <option value="Thriller">থ্রিলার</option>
+                    <option value="Horror">হরর</option>
+                    <option value="Romance">রোম্যান্স</option>
+                    <option value="Bangla Movie">বাংলা মুভি</option>
+                    <option value="Hindi movie">হিন্দি মুভি</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <!-- হিরো সেকশন -->
+    <div class="pt-24 pb-16 px-4 hero-pattern">
+        <div class="container mx-auto text-center">
+            <h2 class="tv-heading text-3xl md:text-4xl font-bold mb-4">আপনার প্রিয় মুভির সংগ্রহ</h2>
+            <p class="tv-text text-lg md:text-xl text-gray-300 mb-8">হাজারো মুভির বিশাল সংগ্রহ থেকে আপনার পছন্দের মুভি খুঁজে নিন</p>
+            
+            <div class="flex flex-wrap justify-center gap-4 mb-12">
+                <div class="glass badge px-4 py-2 rounded-full flex items-center">
+                    <i class="fa-solid fa-tv mr-2 text-blue-400"></i>
+                    <span>HD Quality</span>
+                </div>
+                <div class="glass badge px-4 py-2 rounded-full flex items-center">
+                    <i class="fa-solid fa-download mr-2 text-green-400"></i>
+                    <span>Fast Download</span>
+                </div>
+                <div class="glass badge px-4 py-2 rounded-full flex items-center">
+                    <i class="fa-solid fa-clock mr-2 text-purple-400"></i>
+                    <span>24/7 Available</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- মুভি সেকশন -->
+    <section class="px-4 pb-16">
+        <div class="container mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-bold">সব মুভি</h3>
+                <span id="movieCount" class="glass px-3 py-1 rounded-full">০ মুভি</span>
+            </div>
+
+            <!-- স্টেটস -->
+            <div id="loading">
+                <div class="spinner"></div>
+            </div>
+            
+            <div id="error" class="hidden text-center py-12">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-yellow-400 mb-4"></i>
+                <p class="text-xl mb-4">মুভি লোড করতে সমস্যা হয়েছে</p>
+                <button onclick="loadMovies()" class="glass px-6 py-2 rounded-lg hover:bg-opacity-80 transition">আবার চেষ্টা করুন</button>
+            </div>
+            
+            <div id="noResults" class="hidden text-center py-12">
+                <i class="fa-solid fa-magnifying-glass text-4xl text-gray-400 mb-4"></i>
+                <p class="text-xl">কোনো মুভি পাওয়া যায়নি</p>
+                <p class="text-gray-400 mt-2">অনুগ্রহ করে অন্য কীওয়ার্ড দিয়ে খুঁজুন</p>
+            </div>
+
+            <!-- মুভি গ্রিড -->
+            <div id="movieGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
+        </div>
+    </section>
+
+    <!-- Firebase এবং অ্যাপ লজিক -->
+    <script>
+        // Firebase কনফিগারেশন
+        const firebaseConfig = {
+            apiKey: "AIzaSyA0SGhRFaylQy92qJGKwailBNQmbN8BeWY",
+            authDomain: "kotha-web-a5573.firebaseapp.com",
+            databaseURL: "https://kotha-web-a5573-default-rtdb.firebaseio.com",
+            projectId: "kotha-web-a5573",
+            storageBucket: "kotha-web-a5573.appspot.com",
+            messagingSenderId: "352220978721",
+            appId: "1:352220978721:web:2bb77246c9e91257d28d60",
+            measurementId: "G-G8XHYT53L3"
+        };
+
+        // Firebase ইনিশিয়ালাইজেশন
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // গ্লোবাল ভ্যারিয়েবলস
+        let allMovies = [];
+        let searchTimeout = null;
+
+        // DOM কনটেন্ট লোড হওয়ার পর মুভি লোড শুরু
+        document.addEventListener('DOMContentLoaded', function() {
+            // মোবাইল মেনু হ্যান্ডলিং
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
+            const closeMobileMenu = document.getElementById('closeMobileMenu');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.add('open');
+                document.body.style.overflow = 'hidden'; // স্ক্রল বন্ধ
+            });
+            
+            closeMobileMenu.addEventListener('click', function() {
+                mobileMenu.classList.remove('open');
+                document.body.style.overflow = 'auto'; // স্ক্রল চালু
+            });
+            
+            // মোবাইল সার্চ এবং ফিল্টার
+            document.getElementById('mobileSearchInput').addEventListener('input', function() {
+                document.getElementById('searchInput').value = this.value;
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(filterMovies, 300);
+            });
+            
+            document.getElementById('mobileCategoryFilter').addEventListener('change', function() {
+                document.getElementById('categoryFilter').value = this.value;
+                filterMovies();
+            });
+            
+            // ডেস্কটপ সার্চ এবং ফিল্টার
+            document.getElementById('searchInput').addEventListener('input', function() {
+                document.getElementById('mobileSearchInput').value = this.value;
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(filterMovies, 300);
+            });
+            
+            document.getElementById('categoryFilter').addEventListener('change', function() {
+                document.getElementById('mobileCategoryFilter').value = this.value;
+                filterMovies();
+            });
+            
+            // মুভি লোড করুন
+            loadMovies();
+        });
+
+        // মুভি লোড ফাংশন
+        function loadMovies() {
+            showLoading();
+            
+            // Firebase Realtime Database থেকে ডেটা লোড
+            database.ref('movies').once('value')
+            .then((snapshot) => {
+                allMovies = [];
+                snapshot.forEach((childSnapshot) => {
+                    const movie = childSnapshot.val();
+                    movie.id = childSnapshot.key;
+                    allMovies.push(movie);
+                });
+                
+                displayMovies(allMovies);
+                hideLoading();
+            })
+            .catch((error) => {
+                console.error("Error loading movies: ", error);
+                document.getElementById('error').classList.remove('hidden');
+                hideLoading();
+                
+                // Fallback: যদি Firebase কাজ না করে তবে স্ট্যাটিক ডেটা ব্যবহার করুন
+                setTimeout(() => {
+                    if (allMovies.length === 0) {
+                        loadStaticMovies();
+                    }
+                }, 2000);
+            });
+        }
+        
+        // স্ট্যাটিক মুভি ডেটা (Fallback)
+        function loadStaticMovies() {
+            allMovies = [
+                {
+                    id: "1",
+                    title: "Singham Again",
+                    genre: "Action , Hindi movie",
+                    year: "1Nov 2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FSingham%20Again%20%5BHindi%5D.webp?alt=media&token=85c985f2-7791-42bc-86f1-5c398555724e",
+                    downloadUrl: "https://example.com/download/1",
+                    url: "https://example.com/watch/1"
+                },
+                {
+                    id: "2",
+                    title: "Animal",
+                    genre: "Bangla Movie, Bangla Dubbed",
+                    year: "2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FAnimal%20%5BKannada%5D.webp?alt=media&token=1aeab97e-5819-4bb3-8a94-6a9494554965",
+                    downloadUrl: "https://example.com/download/2",
+                    url: "https://example.com/watch/2"
+                },
+                {
+                    id: "3",
+                    title: "Saripodhaa Sanivaaram (Hindi)",
+                    genre: "Action , Hindi dubbed, Hindi movie",
+                    year: "2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FSaripodhaa%20Sanivaaram%20%5BHindi%5D.webp?alt=media&token=13626842-f425-45af-85d0-8da49cb60f68",
+                    downloadUrl: "https://example.com/download/3",
+                    url: "https://example.com/watch/3"
+                },
+                {
+                    id: "4",
+                    title: "Rajkumar (2024) Bangla Movie",
+                    genre: "Action,Bangla Movie",
+                    year: "2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FMV5BZDg4ZTUxNDMtNTdmYS00YjQ4LWI5ZGQtMTY0ZmM2NTZmNGU4XkEyXkFqcGc%40._V1_.jpg?alt=media&token=c53f1231-2efe-4e49-94ad-f5d36780d464",
+                    downloadUrl: "https://example.com/download/4",
+                    url: "https://example.com/watch/4"
+                },
+                {
+                    id: "5",
+                    title: "Toofan",
+                    genre: "Action,Bangla Movie",
+                    year: "2024",
+                    photoUrl: "https://firebasestorage.googleapis.com/v0/b/kotha-web-a5573.appspot.com/o/movies%2FToofan%20%5BBengali%5D.jpg?alt=media&token=bc34f1ba-5c86-455f-9a56-c8e2448f481f",
+                    downloadUrl: "https://example.com/download/5",
+                    url: "https://example.com/watch/5"
+                }
+            ];
+            
+            displayMovies(allMovies);
+            hideLoading();
+        }
+
+        // মুভি ডিসপ্লে ফাংশন
+        function displayMovies(movies) {
+            const movieGrid = document.getElementById('movieGrid');
+            movieGrid.innerHTML = '';
+            
+            if (movies.length === 0) {
+                document.getElementById('noResults').classList.remove('hidden');
+                document.getElementById('movieCount').textContent = '০ মুভি';
+                return;
+            }
+            
+            document.getElementById('noResults').classList.add('hidden');
+            document.getElementById('movieCount').textContent = `${movies.length}টি মুভি`;
+            
+            movies.forEach(movie => {
+                const posterUrl = getPosterUrl(movie);
+                const category = extractPrimaryCategory(movie.genre || '');
+                
+                const movieCard = `
+                    <div class="card glass rounded-lg overflow-hidden tv-card">
+                        <div class="relative overflow-hidden clickable-area" onclick="goToMovieDetails('${movie.id}')">
+                            <img 
+                                src="${posterUrl}" 
+                                alt="${movie.title || 'মুভি'}" 
+                                class="poster w-full h-48 md:h-56 lg:h-64 object-cover"
+                                loading="lazy"
+                                referrerpolicy="no-referrer"
+                                onerror="this.src='https://via.placeholder.com/800x1200?text=No+Poster'"
+                            >
+                            <div class="absolute top-2 right-2 flex space-x-2">
+                                ${category ? `<span class="category-badge px-2 py-1 rounded text-xs">${category}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-1 truncate clickable-area" onclick="goToMovieDetails('${movie.id}')">${movie.title || 'অজানা মুভি'}</h4>
+                            <div class="flex justify-between items-center text-sm text-gray-300 mb-2">
+                                <span>${movie.year || 'তারিখ不详'}</span>
+                            </div>
+                            
+                        </div>
+                    </div>
+                `;
+                
+                movieGrid.innerHTML += movieCard;
+            });
+        }
+
+        // মুভি ডিটেলস পেজে যাওয়ার ফাংশন
+        function goToMovieDetails(movieId) {
+            window.location.href = `movie-details.html?id=${movieId}`;
+        }
+
+        // পোস্টার URL পাওয়ার ফাংশন
+        function getPosterUrl(movie) {
+            if (movie.photoUrl) {
+                let url = movie.photoUrl;
+                if (url.startsWith('http://')) {
+                    url = 'https://' + url.substring(7);
+                }
+                return url;
+            }
+            
+            return 'https://via.placeholder.com/800x1200?text=No+Poster';
+        }
+
+        // জেনার স্ট্রিং থেকে প্রাইমারি ক্যাটাগরি বের করা
+        function extractPrimaryCategory(genreString) {
+            if (!genreString) return '';
+            
+            const lowerGenre = genreString.toLowerCase();
+            
+            // প্রায়োরিটি অনুযায়ী ক্যাটাগরি চেক করা
+            if (lowerGenre.includes('bangla')) return 'বাংলা মুভি';
+            if (lowerGenre.includes('hindi')) return 'হিন্দি মুভি';
+            if (lowerGenre.includes('action')) return 'অ্যাকশন';
+            if (lowerGenre.includes('drama')) return 'ড্রামা';
+            if (lowerGenre.includes('comedy')) return 'কমেডি';
+            if (lowerGenre.includes('thriller')) return 'থ্রিলার';
+            if (lowerGenre.includes('horror')) return 'হরর';
+            if (lowerGenre.includes('romance')) return 'রোম্যান্স';
+            
+            // যদি কোনো ম্যাচ না থাকে, প্রথম অংশ রিটার্ন করুন
+            return genreString.split(',')[0].trim();
+        }
+
+        // মুভি ফিল্টার ফাংশন
+        function filterMovies() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            
+            let filteredMovies = allMovies;
+            
+            // ক্যাটাগরি দ্বারা ফিল্টার
+            if (category !== 'all') {
+                filteredMovies = filteredMovies.filter(movie => {
+                    const movieCategory = extractPrimaryCategory(movie.genre || '').toLowerCase();
+                    const categoryMap = {
+                        'action': 'অ্যাকশন',
+                        'drama': 'ড্রামা',
+                        'comedy': 'কমেডি',
+                        'thriller': 'থ্রিলার',
+                        'horror': 'হরর',
+                        'romance': 'রোম্যান্স',
+                        'bangla movie': 'বাংলা মুভি',
+                        'hindi movie': 'হিন্দি মুভি'
+                    };
+                    
+                    const expectedCategory = categoryMap[category.toLowerCase()] || category;
+                    return movieCategory.includes(expectedCategory.toLowerCase());
+                });
+            }
+            
+            // সার্চ টার্ম দ্বারা ফিল্টার
+            if (searchTerm) {
+                filteredMovies = filteredMovies.filter(movie => 
+                    (movie.title && movie.title.toLowerCase().includes(searchTerm)) ||
+                    (movie.genre && movie.genre.toLowerCase().includes(searchTerm)) ||
+                    (movie.year && movie.year.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            displayMovies(filteredMovies);
+        }
+
+        // লোডিং স্টেট ফাংশন
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('noResults').classList.add('hidden');
+            document.getElementById('movieGrid').innerHTML = '';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+        
+        // টাচ ইভেন্ট হ্যান্ডলিং
+        document.addEventListener('touchstart', function() {}, { passive: true });
+    </script>
+</body>
+</html>
